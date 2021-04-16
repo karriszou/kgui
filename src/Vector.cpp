@@ -304,9 +304,9 @@ namespace math
     //
     // Vec3
     //
-    const Vec3 Vec3::up		= Vec3(0, 1,  0);
-    const Vec3 Vec3::right	= Vec3(1, 0,  0);
-    const Vec3 Vec3::forward	= Vec3(0, 0, -1);
+    // const Vec3 Vec3::up	= Vec3(0, 1,  0);
+    // const Vec3 Vec3::right	= Vec3(1, 0,  0);
+    // const Vec3 Vec3::forward	= Vec3(0, 0, -1);
     
     Vec3::Vec3()
     {
@@ -431,6 +431,24 @@ namespace math
 	res.y = left.z * right.x - left.x * right.z;
 	res.z = left.x * right.y - left.y * right.x; 
 	return res;
+    }
+
+    Vec3& Vec3::up()
+    {
+	static Vec3 up = Vec3(0, 1, 0);
+	return up;
+    }
+
+    Vec3& Vec3::right()
+    {
+	static Vec3 right = Vec3(1, 0, 0);
+	return right;
+    }
+
+    Vec3& Vec3::forward()
+    {
+	static Vec3 forward = Vec3(0, 0, -1);
+	return forward;
     }
 
     float Vec3::operator[](int idx)

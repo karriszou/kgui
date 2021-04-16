@@ -248,9 +248,9 @@ void renderCube(GLuint vao, GLuint shader)
 
     static math::mat4 model = (*new math::mat4()).scale(.5);
     if(!pause)
-    	model.rotate(speed * 3e-4, math::vec3::up);
+    	model.rotate(speed * 3e-4, math::vec3::up());
     if(!pause && vertical)
-	model.rotate(speed * 3e-4, math::vec3::right);
+	model.rotate(speed * 3e-4, math::vec3::right());
 
     int w, h;
     glfwGetFramebufferSize(window, &w, &h);

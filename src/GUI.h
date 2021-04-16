@@ -3,7 +3,6 @@
 
 #include <vector>
 #include "Rect.h"
-#include "Vector.h"
 #include "GLRenderer.h"
 
 
@@ -94,6 +93,16 @@ private:
     bool isFixedH;
     float x, y, w, h;
 };
+
+// For text align
+enum class Align : int
+    {
+     Center = 0,
+     Left,
+     Right,
+     Top,
+     Bottom
+    };
 
 
 //

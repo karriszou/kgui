@@ -2,6 +2,7 @@
 #define VECTOR_H
 
 #include <cmath>
+#include <iostream>
 
 
 namespace math
@@ -84,9 +85,9 @@ namespace math
     public:
 	float x, y, z;
 
-	static const Vec3 up;		// (0, 1,  0)
-	static const Vec3 right;	// (1, 0,  0)
-	static const Vec3 forward;	// (0, 0, -1)
+	// static const Vec3 up;	// (0, 1,  0)
+	// static const Vec3 right;	// (1, 0,  0)
+	// static const Vec3 forward;	// (0, 0, -1)
 
 	Vec3();
 	Vec3(float n);
@@ -118,6 +119,22 @@ namespace math
 	Vec3& cross(Vec3& rhs);
 
 	static Vec3& cross(Vec3& left, Vec3& right);
+	
+	static Vec3& up();
+
+	static Vec3& right();
+
+	static Vec3& forward();
+
+	inline void print()
+	{
+	    std::cout << "[ " << x << ", " << y << ", " << z << " ]" << std::endl;
+	}
+
+	inline void print() const
+	{
+	    std::cout << "[ " << x << ", " << y << ", " << z << " ]" << std::endl;
+	}
 
 	float operator[](int idx);
 	float operator[](int idx) const;

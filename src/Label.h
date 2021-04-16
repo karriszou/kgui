@@ -5,7 +5,7 @@
 #include "Rect.h"
 #include "GUI.h"
 #include "StbFont.h"
-#include "Vector.h"
+
 
 BEGIN_GUI
 
@@ -27,6 +27,9 @@ public:
 	  StbFont stbfont,
 	  const math::vec4& fontColor = math::vec4(1.0));
 
+    void setText(const std::string& text);
+
+    void align(gui::Align horzontal = gui::Align::Center, gui::Align vertical = gui::Align::Center);
 
     std::vector<DrawCommand>& getDrawCmds() override;
 
@@ -36,6 +39,7 @@ public:
 
 private:
     StbFont stbfont;
+    gui::Align hAlign, vAlign;
 };
     
 END_GUI

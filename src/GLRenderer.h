@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "glad.h"
-#include "Vector.h"
 #include "Rect.h"
 #include "StbFont.h"
 

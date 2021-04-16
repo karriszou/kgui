@@ -12,6 +12,12 @@ GLRenderer::    GLRenderer(float x, float y, float w, float h)
      vao(-1),
      vbo(-1)
 {
+    if(!gladLoadGL())
+    {
+	std::cerr << "Error::GLRenderer::Could not load OpenGL!" << std::endl;
+	return;
+    }
+
     if(GLRenderer::UIShader == NULL)
     	GLRenderer::UIShader = new GLShader(GLRenderer::ui_vs, GLRenderer::ui_fs);
     if(GLRenderer::TextShader == NULL)
@@ -32,6 +38,10 @@ GLRenderer::    GLRenderer(float x, float y, float w, float h)
     glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(gui::VertexData), (void*)offsetof(gui::VertexData, r));
 }
 
+struct glStatus
+{
+    bool blend, cullFace;
+};
 void GLRenderer::draw(const gui::DrawCommand& cmd)
 {
     // Fill buffer data
@@ -39,9 +49,20 @@ void GLRenderer::draw(const gui::DrawCommand& cmd)
     glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(gui::VertexData) * cmd.vtxData.size(), &cmd.vtxData[0], GL_STATIC_DRAW);
 
-    glDisable(GL_DEPTH_TEST);
+    // Store gl status
+    static GLboolean blend, cullFace, depthTest;
+    glGetBooleanv(GL_BLEND, &blend);
+    glGetBooleanv(GL_CULL_FACE, &cullFace);
+    glGetBooleanv(GL_DEPTH_TEST, &depthTest);
+    static GLint blendSrc, blendDst;
+    glGetIntegerv(GL_BLEND_SRC_ALPHA, &blendSrc);
+    glGetIntegerv(GL_BLEND_DST_ALPHA, &blendDst);
+
+    // Set gl status
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
 
     bool enableTex = cmd.texture != NULL;
 
@@ -60,7 +81,7 @@ void GLRenderer::draw(const gui::DrawCommand& cmd)
 	return;
     }
 
-    if(cmd.clip)
+    if(cmd.clip != NULL)
     {
 	glEnable(GL_SCISSOR_TEST);
 	// glScissor(cmd.clip->x, cmd.clip->y, cmd.clip->w, cmd.clip->h);
@@ -147,6 +168,12 @@ void GLRenderer::draw(const gui::DrawCommand& cmd)
 
     if(cmd.clip) glDisable(GL_SCISSOR_TEST);
     shader->use(false);
+
+    // Restore gl status
+    if(blend)		glBlendFunc(blendSrc, blendDst);
+    else		glDisable(GL_BLEND);
+    if(cullFace)	glEnable(GL_CULL_FACE);
+    if(depthTest)	glEnable(GL_DEPTH_TEST);
 }
 
 void GLRenderer::draw(gui::IDrawable& drawable)

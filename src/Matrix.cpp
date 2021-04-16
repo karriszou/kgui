@@ -204,8 +204,10 @@ namespace math
 	mat[14] = z;
 	mat[15] = 1.0;
 
-	if(isPreMultiply) return mat * (*this);	// Pre-multiplication
-	else return *this * mat;			// Post-multiplication (the same as OpenGL)
+	// if(isPreMultiply) return mat * (*this);		// Pre-multiplication
+	// else return *this * mat;			// Post-multiplication (the same as OpenGL)
+	Mat4& ans = isPreMultiply ? (mat * (*this)) : (*this * mat);
+	return this->set(ans.get());
     }
 
     Mat4& Mat4::translate(const Vec3& pos)
@@ -240,8 +242,10 @@ namespace math
 	mat[14] = 0;
 	mat[15] = 1.0;
 
-	if(isPreMultiply) return mat * (*this);	// Pre-multiplication
-	else return *this * mat;			// Post-multiplication (the same as OpenGL)
+	// if(isPreMultiply) return mat * (*this);	// Pre-multiplication
+	// else return *this * mat;			// Post-multiplication (the same as OpenGL)
+	Mat4& ans = isPreMultiply ? (mat * (*this)) : (*this * mat);
+	return this->set(ans.get());
     }
 
     Mat4& Mat4::rotate(float angle, const Vec3& axis)
@@ -277,8 +281,10 @@ namespace math
 	mat[14] = 0.0;
 	mat[15] = 1.0;
 
-	if(isPreMultiply) return mat * (*this);	// Pre-multiplication
-	else return *this * mat;			// Post-multiplication (the same as OpenGL)
+	// if(isPreMultiply) return mat * (*this);		// Pre-multiplication
+	// else return *this * mat;			// Post-multiplication (the same as OpenGL)
+	Mat4& ans = isPreMultiply ? (mat * (*this)) : (*this * mat);
+	return this->set(ans.get());
     }
 
     Mat4& Mat4::scale(const Vec3& scale)
@@ -596,7 +602,8 @@ namespace math
 
 	values[12] = 0.0;
 	values[13] = 0.0;
-	values[14] = -2.0 * far * dnear / depth;
+	values[14] = -1.0 * far * dnear / depth;	//  0 - 1
+	// values[14] = -2.0 * far * dnear / depth;	// -1 - 1
 	values[15] = 0.0;
 	return *this;
     }
@@ -667,95 +674,129 @@ namespace math
 	return values;
     }
 
+    const float* Mat4::get() const
+    {
+	return this->values;
+    }
+
+    Mat4& Mat4::operator=(const Mat4& other)
+    {
+	values[0]  = other[0];
+	values[1]  = other[1];
+	values[2]  = other[2];
+	values[3]  = other[3];
+
+	values[4]  = other[4];
+	values[5]  = other[5];
+	values[6]  = other[6];
+	values[7]  = other[7];
+
+	values[8]  = other[8];
+	values[9]  = other[9];
+	values[10] = other[10];
+	values[11] = other[11];
+
+	values[12] = other[12];
+	values[13] = other[13];
+	values[14] = other[14];
+	values[15] = other[15];
+
+	return *this;
+    }
+
     float Mat4::operator[](int idx)
     {
-	assert(idx > -1 && idx < 17);
+	assert(idx > -1 && idx < 16);
 	return values[idx];
     }
 
     float Mat4::operator[](int idx) const
     {
-	assert(idx > -1 && idx < 17);
+	assert(idx > -1 && idx < 16);
 	return values[idx];
     }
 
-    Mat4& operator*(Mat4&lhs, Mat4& rhs)
+    //
+    // Free funtion
+    //
+    Mat4& operator*(const Mat4&lhs, const Mat4& rhs)
     {
 	float mat[16];
-	mat[0]  = lhs[0] * rhs[0] + lhs[1] * rhs[4] + lhs[2] * rhs[8]  + lhs[3] * rhs[12];
-	mat[1]  = lhs[0] * rhs[1] + lhs[1] * rhs[5] + lhs[2] * rhs[9]  + lhs[3] * rhs[13];
-	mat[2]  = lhs[0] * rhs[2] + lhs[1] * rhs[6] + lhs[2] * rhs[10] + lhs[3] * rhs[14];
-	mat[3]  = lhs[0] * rhs[3] + lhs[1] * rhs[7] + lhs[2] * rhs[11] + lhs[3] * rhs[15];
+	mat[0]  = lhs[0] * rhs[0] + lhs[4] * rhs[1] + lhs[8]  * rhs[2] + lhs[12] * rhs[3];
+	mat[1]  = lhs[1] * rhs[0] + lhs[5] * rhs[1] + lhs[9]  * rhs[2] + lhs[13] * rhs[3];
+	mat[2]  = lhs[2] * rhs[0] + lhs[6] * rhs[1] + lhs[10] * rhs[2] + lhs[14] * rhs[3];
+	mat[3]  = lhs[3] * rhs[0] + lhs[7] * rhs[1] + lhs[11] * rhs[2] + lhs[15] * rhs[3];
 
-	mat[4]  = lhs[4] * rhs[0] + lhs[5] * rhs[4] + lhs[6] * rhs[8]  + lhs[7] * rhs[12];
-	mat[5]  = lhs[4] * rhs[1] + lhs[5] * rhs[5] + lhs[6] * rhs[9]  + lhs[7] * rhs[13];
-	mat[6]  = lhs[4] * rhs[2] + lhs[5] * rhs[6] + lhs[6] * rhs[10] + lhs[7] * rhs[14];
-	mat[7]  = lhs[4] * rhs[3] + lhs[5] * rhs[7] + lhs[6] * rhs[11] + lhs[7] * rhs[15];
+	mat[4]  = lhs[0] * rhs[4] + lhs[4] * rhs[5] + lhs[8]  * rhs[6] + lhs[12] * rhs[7];
+	mat[5]  = lhs[1] * rhs[4] + lhs[5] * rhs[5] + lhs[9]  * rhs[6] + lhs[13] * rhs[7];
+	mat[6]  = lhs[2] * rhs[4] + lhs[6] * rhs[5] + lhs[10] * rhs[6] + lhs[14] * rhs[7];
+	mat[7]  = lhs[3] * rhs[4] + lhs[7] * rhs[5] + lhs[11] * rhs[6] + lhs[15] * rhs[7];
 
-	mat[8]  = lhs[8] * rhs[0] + lhs[9] * rhs[4] + lhs[10] * rhs[8]  + lhs[11] * rhs[12];
-	mat[9]  = lhs[8] * rhs[1] + lhs[9] * rhs[5] + lhs[10] * rhs[9]  + lhs[11] * rhs[13];
-	mat[10] = lhs[8] * rhs[2] + lhs[9] * rhs[6] + lhs[10] * rhs[10] + lhs[11] * rhs[14];
-	mat[11] = lhs[8] * rhs[3] + lhs[9] * rhs[7] + lhs[10] * rhs[11] + lhs[11] * rhs[15];
+	mat[8]  = lhs[0] * rhs[8] + lhs[4] * rhs[9] +  lhs[8]  * rhs[10] + lhs[12] * rhs[11];
+	mat[9]  = lhs[1] * rhs[8] + lhs[5] * rhs[9] +  lhs[9]  * rhs[10] + lhs[13] * rhs[11];
+	mat[10] = lhs[2] * rhs[8] + lhs[6] * rhs[9] +  lhs[10] * rhs[10] + lhs[14] * rhs[11];
+	mat[11] = lhs[3] * rhs[8] + lhs[7] * rhs[9] +  lhs[11] * rhs[10] + lhs[15] * rhs[11];
 
-	mat[12] = lhs[12] * rhs[0] + lhs[13] * rhs[4] + lhs[14] * rhs[8]  + lhs[15] * rhs[12];
-	mat[13] = lhs[12] * rhs[1] + lhs[13] * rhs[5] + lhs[14] * rhs[9]  + lhs[15] * rhs[13];
-	mat[14] = lhs[12] * rhs[2] + lhs[13] * rhs[6] + lhs[14] * rhs[10] + lhs[15] * rhs[14];
-	mat[15] = lhs[12] * rhs[3] + lhs[13] * rhs[7] + lhs[14] * rhs[11] + lhs[15] * rhs[15];
-
+	mat[12] =  lhs[0]* rhs[12] + lhs[4] * rhs[13] + rhs[14] * lhs[8]  + lhs[12] * rhs[15];
+	mat[13] =  lhs[1]* rhs[12] + lhs[5] * rhs[13] + rhs[14] * lhs[9]  + lhs[13] * rhs[15];
+	mat[14] =  lhs[2]* rhs[12] + lhs[6] * rhs[13] + rhs[14] * lhs[10] + lhs[14] * rhs[15];
+	mat[15] =  lhs[3]* rhs[12] + lhs[7] * rhs[13] + rhs[14] * lhs[11] + lhs[15] * rhs[15];
 	return (new Mat4())->set(mat);
     }
 
     Mat4& operator*(Mat4& lhs, float rhs[16])
     {
 	float mat[16];
-	mat[0]  = lhs[0] * rhs[0] + lhs[1] * rhs[4] + lhs[2] * rhs[8]  + lhs[3] * rhs[12];
-	mat[1]  = lhs[0] * rhs[1] + lhs[1] * rhs[5] + lhs[2] * rhs[9]  + lhs[3] * rhs[13];
-	mat[2]  = lhs[0] * rhs[2] + lhs[1] * rhs[6] + lhs[2] * rhs[10] + lhs[3] * rhs[14];
-	mat[3]  = lhs[0] * rhs[3] + lhs[1] * rhs[7] + lhs[2] * rhs[11] + lhs[3] * rhs[15];
+	mat[0]  = lhs[0] * rhs[0] + lhs[4] * rhs[1] + lhs[8]  * rhs[2] + lhs[12] * rhs[3];
+	mat[1]  = lhs[1] * rhs[0] + lhs[5] * rhs[1] + lhs[9]  * rhs[2] + lhs[13] * rhs[3];
+	mat[2]  = lhs[2] * rhs[0] + lhs[6] * rhs[1] + lhs[10] * rhs[2] + lhs[14] * rhs[3];
+	mat[3]  = lhs[3] * rhs[0] + lhs[7] * rhs[1] + lhs[11] * rhs[2] + lhs[15] * rhs[3];
 
-	mat[4]  = lhs[4] * rhs[0] + lhs[5] * rhs[4] + lhs[6] * rhs[8]  + lhs[7] * rhs[12];
-	mat[5]  = lhs[4] * rhs[1] + lhs[5] * rhs[5] + lhs[6] * rhs[9]  + lhs[7] * rhs[13];
-	mat[6]  = lhs[4] * rhs[2] + lhs[5] * rhs[6] + lhs[6] * rhs[10] + lhs[7] * rhs[14];
-	mat[7]  = lhs[4] * rhs[3] + lhs[5] * rhs[7] + lhs[6] * rhs[11] + lhs[7] * rhs[15];
+	mat[4]  = lhs[0] * rhs[4] + lhs[4] * rhs[5] + lhs[8]  * rhs[6] + lhs[12] * rhs[7];
+	mat[5]  = lhs[1] * rhs[4] + lhs[5] * rhs[5] + lhs[9]  * rhs[6] + lhs[13] * rhs[7];
+	mat[6]  = lhs[2] * rhs[4] + lhs[6] * rhs[5] + lhs[10] * rhs[6] + lhs[14] * rhs[7];
+	mat[7]  = lhs[3] * rhs[4] + lhs[7] * rhs[5] + lhs[11] * rhs[6] + lhs[15] * rhs[7];
 
-	mat[8]  = lhs[8] * rhs[0] + lhs[9] * rhs[4] + lhs[10] * rhs[8]  + lhs[11] * rhs[12];
-	mat[9]  = lhs[8] * rhs[1] + lhs[9] * rhs[5] + lhs[10] * rhs[9]  + lhs[11] * rhs[13];
-	mat[10] = lhs[8] * rhs[2] + lhs[9] * rhs[6] + lhs[10] * rhs[10] + lhs[11] * rhs[14];
-	mat[11] = lhs[8] * rhs[3] + lhs[9] * rhs[7] + lhs[10] * rhs[11] + lhs[11] * rhs[15];
+	mat[8]  = lhs[0] * rhs[8] + lhs[4] * rhs[9] +  lhs[8]  * rhs[10] + lhs[12] * rhs[11];
+	mat[9]  = lhs[1] * rhs[8] + lhs[5] * rhs[9] +  lhs[9]  * rhs[10] + lhs[13] * rhs[11];
+	mat[10] = lhs[2] * rhs[8] + lhs[6] * rhs[9] +  lhs[10] * rhs[10] + lhs[14] * rhs[11];
+	mat[11] = lhs[3] * rhs[8] + lhs[7] * rhs[9] +  lhs[11] * rhs[10] + lhs[15] * rhs[11];
 
-	mat[12] = lhs[12] * rhs[0] + lhs[13] * rhs[4] + lhs[14] * rhs[8]  + lhs[15] * rhs[12];
-	mat[13] = lhs[12] * rhs[1] + lhs[13] * rhs[5] + lhs[14] * rhs[9]  + lhs[15] * rhs[13];
-	mat[14] = lhs[12] * rhs[2] + lhs[13] * rhs[6] + lhs[14] * rhs[10] + lhs[15] * rhs[14];
-	mat[15] = lhs[12] * rhs[3] + lhs[13] * rhs[7] + lhs[14] * rhs[11] + lhs[15] * rhs[15];
-	return lhs.set(mat);
+	mat[12] =  lhs[0]* rhs[12] + lhs[4] * rhs[13] + rhs[14] * lhs[8]  + lhs[12] * rhs[15];
+	mat[13] =  lhs[1]* rhs[12] + lhs[5] * rhs[13] + rhs[14] * lhs[9]  + lhs[13] * rhs[15];
+	mat[14] =  lhs[2]* rhs[12] + lhs[6] * rhs[13] + rhs[14] * lhs[10] + lhs[14] * rhs[15];
+	mat[15] =  lhs[3]* rhs[12] + lhs[7] * rhs[13] + rhs[14] * lhs[11] + lhs[15] * rhs[15];
+	// return lhs.set(mat);
+	return (new Mat4())->set(mat);
     }
 
     Mat4& operator*(float lhs[16], Mat4& rhs)
     {
 	float mat[16];
-	mat[0]  = lhs[0] * rhs[0] + lhs[1] * rhs[4] + lhs[2] * rhs[8]  + lhs[3] * rhs[12];
-	mat[1]  = lhs[0] * rhs[1] + lhs[1] * rhs[5] + lhs[2] * rhs[9]  + lhs[3] * rhs[13];
-	mat[2]  = lhs[0] * rhs[2] + lhs[1] * rhs[6] + lhs[2] * rhs[10] + lhs[3] * rhs[14];
-	mat[3]  = lhs[0] * rhs[3] + lhs[1] * rhs[7] + lhs[2] * rhs[11] + lhs[3] * rhs[15];
+	mat[0]  = lhs[0] * rhs[0] + lhs[4] * rhs[1] + lhs[8]  * rhs[2] + lhs[12] * rhs[3];
+	mat[1]  = lhs[1] * rhs[0] + lhs[5] * rhs[1] + lhs[9]  * rhs[2] + lhs[13] * rhs[3];
+	mat[2]  = lhs[2] * rhs[0] + lhs[6] * rhs[1] + lhs[10] * rhs[2] + lhs[14] * rhs[3];
+	mat[3]  = lhs[3] * rhs[0] + lhs[7] * rhs[1] + lhs[11] * rhs[2] + lhs[15] * rhs[3];
 
-	mat[4]  = lhs[4] * rhs[0] + lhs[5] * rhs[4] + lhs[6] * rhs[8]  + lhs[7] * rhs[12];
-	mat[5]  = lhs[4] * rhs[1] + lhs[5] * rhs[5] + lhs[6] * rhs[9]  + lhs[7] * rhs[13];
-	mat[6]  = lhs[4] * rhs[2] + lhs[5] * rhs[6] + lhs[6] * rhs[10] + lhs[7] * rhs[14];
-	mat[7]  = lhs[4] * rhs[3] + lhs[5] * rhs[7] + lhs[6] * rhs[11] + lhs[7] * rhs[15];
+	mat[4]  = lhs[0] * rhs[4] + lhs[4] * rhs[5] + lhs[8]  * rhs[6] + lhs[12] * rhs[7];
+	mat[5]  = lhs[1] * rhs[4] + lhs[5] * rhs[5] + lhs[9]  * rhs[6] + lhs[13] * rhs[7];
+	mat[6]  = lhs[2] * rhs[4] + lhs[6] * rhs[5] + lhs[10] * rhs[6] + lhs[14] * rhs[7];
+	mat[7]  = lhs[3] * rhs[4] + lhs[7] * rhs[5] + lhs[11] * rhs[6] + lhs[15] * rhs[7];
 
-	mat[8]  = lhs[8] * rhs[0] + lhs[9] * rhs[4] + lhs[10] * rhs[8]  + lhs[11] * rhs[12];
-	mat[9]  = lhs[8] * rhs[1] + lhs[9] * rhs[5] + lhs[10] * rhs[9]  + lhs[11] * rhs[13];
-	mat[10] = lhs[8] * rhs[2] + lhs[9] * rhs[6] + lhs[10] * rhs[10] + lhs[11] * rhs[14];
-	mat[11] = lhs[8] * rhs[3] + lhs[9] * rhs[7] + lhs[10] * rhs[11] + lhs[11] * rhs[15];
+	mat[8]  = lhs[0] * rhs[8] + lhs[4] * rhs[9] +  lhs[8]  * rhs[10] + lhs[12] * rhs[11];
+	mat[9]  = lhs[1] * rhs[8] + lhs[5] * rhs[9] +  lhs[9]  * rhs[10] + lhs[13] * rhs[11];
+	mat[10] = lhs[2] * rhs[8] + lhs[6] * rhs[9] +  lhs[10] * rhs[10] + lhs[14] * rhs[11];
+	mat[11] = lhs[3] * rhs[8] + lhs[7] * rhs[9] +  lhs[11] * rhs[10] + lhs[15] * rhs[11];
 
-	mat[12] = lhs[12] * rhs[0] + lhs[13] * rhs[4] + lhs[14] * rhs[8]  + lhs[15] * rhs[12];
-	mat[13] = lhs[12] * rhs[1] + lhs[13] * rhs[5] + lhs[14] * rhs[9]  + lhs[15] * rhs[13];
-	mat[14] = lhs[12] * rhs[2] + lhs[13] * rhs[6] + lhs[14] * rhs[10] + lhs[15] * rhs[14];
-	mat[15] = lhs[12] * rhs[3] + lhs[13] * rhs[7] + lhs[14] * rhs[11] + lhs[15] * rhs[15];
-	return rhs.set(mat);
+	mat[12] =  lhs[0]* rhs[12] + lhs[4] * rhs[13] + rhs[14] * lhs[8]  + lhs[12] * rhs[15];
+	mat[13] =  lhs[1]* rhs[12] + lhs[5] * rhs[13] + rhs[14] * lhs[9]  + lhs[13] * rhs[15];
+	mat[14] =  lhs[2]* rhs[12] + lhs[6] * rhs[13] + rhs[14] * lhs[10] + lhs[14] * rhs[15];
+	mat[15] =  lhs[3]* rhs[12] + lhs[7] * rhs[13] + rhs[14] * lhs[11] + lhs[15] * rhs[15];
+	// return rhs.set(mat);
+	return (new Mat4())->set(mat);
     }
 
-    std::ostream& operator<<(std::ostream& os, Mat4& rhs)
+    std::ostream& operator<<(std::ostream& os, const Mat4& rhs)
     {
 	int w = 10;
 	os << std::fixed << std::setprecision(5);

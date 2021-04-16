@@ -74,6 +74,9 @@ namespace math
 
 	float* get();
 
+	const float* get() const;
+
+	Mat4& operator=(const Mat4& other);
 	float operator[](int idx);
 	float operator[](int idx) const;
 
@@ -83,13 +86,11 @@ namespace math
     
     };
 
-    Mat4& operator*(Mat4&lhs, Mat4& rhs);
 
+    Mat4& operator*(const Mat4&lhs, const Mat4& rhs);
     Mat4& operator*(Mat4& lhs, float rhs[16]);
-
     Mat4& operator*(float lhs[16], Mat4& rhs);
-
-    std::ostream& operator<<(std::ostream& os, Mat4& rhs);
+    std::ostream& operator<<(std::ostream& os, const Mat4& rhs);
 
     // Class alias
     using m4   = Mat4;

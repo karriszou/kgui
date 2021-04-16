@@ -14,7 +14,9 @@ Text::Text(const std::string& text,
      thickness(0),
      borderColor(),
      font(font),
-     texture(NULL)
+     texture(NULL),
+     hAlign(gui::Align::Center),
+     vAlign(gui::Align::Center)
 {
     if(text.size() > 0)
     {
@@ -39,9 +41,26 @@ Text::Text(const std::wstring& text,
      thickness(0),
      borderColor(),
      font(font),
-     texture(NULL)
+     texture(NULL),
+     hAlign(gui::Align::Center),
+     vAlign(gui::Align::Center)
 {
     
+}
+
+void Text::setText(const std::string& text)
+{
+    const char *src = text.c_str();
+    std::mbstate_t state = std::mbstate_t();
+    size_t len = std::mbsrtowcs(NULL, (const char **)&text, 0, &state) /* + 1 */;
+    this->text = *new std::wstring(len, L' ');
+    std::mbsrtowcs(&this->text[0], &src, text.size(), &state);
+}
+
+void Text::align(gui::Align horzontal, gui::Align vertical)
+{
+    this->hAlign = horzontal;
+    this->vAlign = vertical;
 }
 
 void Text::setTexture(GLTexture *texture)
@@ -58,8 +77,6 @@ std::vector<DrawCommand>& Text::getDrawCmds()
 {
     if(this->fontSize < 1.0) std::cout << "Warnning::Text::getDrawCmds: font size is too small!" << std::endl;
     this->drawCmds.clear();
-
-    // TODO: Anchor and more align
 
     // Make filled-rectangle command
     if(this->radius > 0)
@@ -113,12 +130,42 @@ std::vector<DrawCommand>& Text::getDrawCmds()
 
     // Make text command
     {
-	// Align text to center
-	float cw = this->font.getTextWidth(text, this->fontSize);
-	float x = rect.x + (rect.w - cw) / 2.0f;
-	x = std::max(x, rect.x);
+	float x, y;
+	// Align text
+	float width = this->font.getTextWidth(text, this->fontSize);
+	if(this->hAlign == gui::Align::Left)
+	{
+	    x = rect.x;
+	}
+	else if(this->hAlign == gui::Align::Center)
+	{
+	    x = rect.x + (rect.w - width) / 2.0f;
+	    x = std::max(x, rect.x);
+	}
+	else 
+	{
+	    x = rect.x + (rect.w - width);
+	    x = std::max(x, rect.x);
+	    if(this->hAlign != gui::Align::Right)
+		std::cout << "Warnning::Text::getDrawCmds: Horizontal text align must be left, center or right!" << std::endl;
+	}
+
 	float ch = this->font.getFontHeight(this->fontSize);
-	float y = rect.y + (rect.h - ch) / 2.0f + ch;
+	if(this->vAlign == gui::Align::Top)
+	{
+	    y = rect.y + ch;
+	}
+	else if(this->vAlign == gui::Align::Center)
+	{
+	    y = rect.y + ch + (rect.h - ch) / 2.0f;
+	}
+	else 
+	{
+	    y = rect.y + rect.h;
+	    if(this->vAlign != gui::Align::Bottom)
+		std::cout << "Warnning::Text::getDrawCmds: Vertical text align must be top, center or bottom!" << std::endl;
+	}
+
 	for(wchar_t c : this->text)
 	{
 	    PackedCharactor& pc = font.getPackedCharactor(c, this->fontSize, &x, &y);

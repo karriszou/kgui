@@ -2,8 +2,9 @@
 #define RECT_H
 
 
-#include "Vector.h"
 #include <iostream>
+#include "Vector.h"
+
 
 //
 // Rect - base on screen coordinate

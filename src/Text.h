@@ -3,9 +3,9 @@
 
 #include <string>
 #include "Rect.h"
-#include "Vector.h"
 #include "GUI.h"
 #include "StbFont.h"
+
 
 struct GLTexture;
 
@@ -33,6 +33,10 @@ public:
 	 const math::vec4& fgColor = math::vec4(.3, .3, .3, 1),
 	 const math::vec4& bgColor = math::vec4(1));
 
+    void setText(const std::string& text);
+
+    void align(gui::Align horzontal = gui::Align::Center, gui::Align vertical = gui::Align::Center);
+
     void setTexture(GLTexture *texture);
 
     void setTexture(int w, int h, unsigned char *data, GLTextureFormat format = GLTextureFormat::Rgba);
@@ -46,6 +50,7 @@ public:
 private:
     StbFont font;
     GLTexture *texture;
+    gui::Align hAlign, vAlign;
 };
     
 END_GUI

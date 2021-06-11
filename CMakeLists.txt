@@ -23,7 +23,8 @@ target_link_directories(${NAME} PUBLIC
 )
 
 target_link_libraries(${NAME} PUBLIC
-  glfw3
+#  glfw3
+  glfw
   dl
   pthread
 )

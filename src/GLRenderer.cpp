@@ -555,8 +555,8 @@ const char *GLRenderer::ui_text_fs = (char *)R"glsl(
     	out vec4 FragColor;
     	void main()
     	{
-	    FragColor = texture(image, UV.st).a * Color * color * factor;
-	    // FragColor = texture(image, UV.st).a * color * factor;
+	    FragColor = texture(image, UV.st).r * Color * color * factor;
+	    // FragColor = texture(image, UV.st).r * color * factor;
     	}
     	)glsl";
 

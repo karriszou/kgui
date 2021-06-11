@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
-#include <glad/glad.h>
+#include "glad.h"
 #include <GLFW/glfw3.h>
 
 #include "Vector.h"
@@ -89,6 +89,9 @@ bool createWindow()
 	return false;
     }
     // glfwWindowHint(GLFW_CENTER_CURSOR, GLFW_TRUE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     window = glfwCreateWindow(WIDTH, HEIGHT, "Game GUI", NULL, NULL);
     if(!window)
     {

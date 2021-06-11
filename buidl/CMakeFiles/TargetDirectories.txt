@@ -1,0 +1,3 @@
+/home/karris/coding/kgui/buidl/CMakeFiles/rebuild_cache.dir
+/home/karris/coding/kgui/buidl/CMakeFiles/edit_cache.dir
+/home/karris/coding/kgui/buidl/CMakeFiles/gui.dir

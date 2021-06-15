@@ -1,10 +1,9 @@
 #include "GLRenderer.h"
 #include "GUI.h"
 
-
 GLShader *GLRenderer::UIShader;
-GLShader* GLRenderer::TextShader;
-GLShader* GLRenderer::TextureShader;
+GLShader *GLRenderer::TextShader;
+GLShader *GLRenderer::TextureShader;
 
 
 GLRenderer::    GLRenderer(float x, float y, float w, float h)
@@ -40,8 +39,31 @@ GLRenderer::    GLRenderer(float x, float y, float w, float h)
 
 struct glStatus
 {
-    bool blend, cullFace;
+    GLboolean blend, cullFace, depthTest;
+    GLint blendSrc, blendDst, polygonModes[2];
 };
+
+glStatus getGLStatus()
+{
+    glStatus status;
+    glGetBooleanv(GL_BLEND, &status.blend);
+    glGetBooleanv(GL_CULL_FACE, &status.cullFace);
+    glGetBooleanv(GL_DEPTH_TEST, &status.depthTest);
+    glGetIntegerv(GL_BLEND_SRC_ALPHA, &status.blendSrc);
+    glGetIntegerv(GL_BLEND_DST_ALPHA, &status.blendDst);
+    glGetIntegerv(GL_POLYGON_MODE, status.polygonModes);
+    return status;
+}
+
+void setGLStatus(glStatus status)
+{
+    if (status.blend)		glBlendFunc(status.blendSrc, status.blendDst);
+    else			glDisable(GL_BLEND);
+    if (status.cullFace)	glEnable(GL_CULL_FACE);
+    if (status.depthTest)	glEnable(GL_DEPTH_TEST);
+    glPolygonMode(GL_FRONT_AND_BACK, status.polygonModes[0]);
+}
+
 void GLRenderer::draw(const gui::DrawCommand& cmd)
 {
     // Fill buffer data
@@ -49,20 +71,16 @@ void GLRenderer::draw(const gui::DrawCommand& cmd)
     glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(gui::VertexData) * cmd.vtxData.size(), &cmd.vtxData[0], GL_STATIC_DRAW);
 
-    // Store gl status
-    static GLboolean blend, cullFace, depthTest;
-    glGetBooleanv(GL_BLEND, &blend);
-    glGetBooleanv(GL_CULL_FACE, &cullFace);
-    glGetBooleanv(GL_DEPTH_TEST, &depthTest);
-    static GLint blendSrc, blendDst;
-    glGetIntegerv(GL_BLEND_SRC_ALPHA, &blendSrc);
-    glGetIntegerv(GL_BLEND_DST_ALPHA, &blendDst);
+    // Extract gl status
+    glStatus status = getGLStatus();
 
     // Set gl status
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     bool enableTex = cmd.texture != NULL;
 
@@ -170,16 +188,13 @@ void GLRenderer::draw(const gui::DrawCommand& cmd)
     shader->use(false);
 
     // Restore gl status
-    if(blend)		glBlendFunc(blendSrc, blendDst);
-    else		glDisable(GL_BLEND);
-    if(cullFace)	glEnable(GL_CULL_FACE);
-    if(depthTest)	glEnable(GL_DEPTH_TEST);
+    setGLStatus(status);
 }
 
 void GLRenderer::draw(gui::IDrawable& drawable)
 {
     for(gui::DrawCommand& cmd : drawable.getDrawCmds())
-	this->draw(cmd);
+	    this->draw(cmd);
 }
 
 gui::DrawCommand& GLRenderer::makeRectangle(const Rect& rect, math::vec4 color, float lineSize)

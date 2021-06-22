@@ -85,10 +85,9 @@ std::vector<DrawCommand *>& Checkbox::getDrawCmds()
 	Rect *rect_text = new Rect(x, y - font_height, this->rect.w - rect_border.w, this->rect.h);
 	for(wchar_t c : this->text)
 	{
-	    PackedCharactor *pc = stbfont.getPackedCharactor(c, this->fontSize, &x, &y);
+	    std::shared_ptr<PackedCharactor> pc = stbfont.getPackedCharactor(c, this->fontSize, &x, &y);
 	    gui::DrawCommand *cmd = GLRenderer::makeCharQuad(*pc, this->fontColor, rect_text);
 	    this->drawCmds.emplace_back(cmd);
-	    delete pc;
 	}
     }
 

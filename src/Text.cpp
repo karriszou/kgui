@@ -169,7 +169,7 @@ std::vector<DrawCommand *>& Text::getDrawCmds()
 
 	for(wchar_t c : this->text)
 	{
-	    PackedCharactor *pc = font.getPackedCharactor(c, this->fontSize, &x, &y);
+	    std::shared_ptr<PackedCharactor> pc = font.getPackedCharactor(c, this->fontSize, &x, &y);
 	    // gui::VertexData vtxdata[] =
 	    //     {
 	    //      { pc.x0, pc.y0,	pc.s0, pc.t0,	fgColor.x, fgColor.y, fgColor.z, fgColor.w },
@@ -188,7 +188,6 @@ std::vector<DrawCommand *>& Text::getDrawCmds()
 
 	    gui::DrawCommand *cmd = GLRenderer::makeCharQuad(*pc, this->fgColor, &this->rect);
 	    this->drawCmds.emplace_back(cmd);
-	    delete pc;
 	}
     }
     return this->drawCmds;

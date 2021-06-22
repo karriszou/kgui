@@ -6,7 +6,7 @@
 
 StbFont::StbFont(const char * fontfile)
     :filepath(fontfile),
-     ttf_buffer(NULL)
+     ttf_buffer(nullptr)
 {
     FILE *file = fopen(fontfile, "rb");
     if(!file)
@@ -26,7 +26,7 @@ StbFont::StbFont(const char * fontfile)
     stbtt_InitFont(&this->font, this->ttf_buffer, 0);
 }
 
-PackedCharactor* StbFont::getPackedCharactor(wchar_t c, int fontSize, float *x, float *y)
+std::shared_ptr<PackedCharactor> StbFont::getPackedCharactor(wchar_t c, int fontSize, float *x, float *y)
 {
     static stbtt_pack_context pc;
     static stbtt_packedchar pdata[1];
@@ -40,8 +40,8 @@ PackedCharactor* StbFont::getPackedCharactor(wchar_t c, int fontSize, float *x, 
     stbtt_PackEnd(&pc);
 
     float dx = 0, dy = fontSize;
-    if(x == NULL) x = &dx;
-    if(y == NULL) y = &dy;
+    if(x == nullptr) x = &dx;
+    if(y == nullptr) y = &dy;
 
     // float scale = stbtt_ScaleForPixelHeight(&font, fontSize);
     // int ascent, decent, lineGap;
@@ -64,7 +64,8 @@ PackedCharactor* StbFont::getPackedCharactor(wchar_t c, int fontSize, float *x, 
     pchar->x1 = q.x1; pchar->s1 = q.s1;
     pchar->y1 = q.y1; pchar->t1 = q.t1;
 
-    return pchar;
+    std::shared_ptr<PackedCharactor> shared_pchar(pchar);
+    return shared_pchar;
 }
 
 float StbFont::getCharactorWidth(wchar_t c, int fontSize)

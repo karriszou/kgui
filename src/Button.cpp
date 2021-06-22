@@ -97,7 +97,7 @@ namespace gui
 	    float y = rect.y + (rect.h - ch) / 2.0f + ch;
 	    for(wchar_t c : this->text)
 	    {
-		PackedCharactor *pc = font.getPackedCharactor(c, this->fontSize, &x, &y);
+		std::shared_ptr<PackedCharactor> pc = font.getPackedCharactor(c, this->fontSize, &x, &y);
 		gui::DrawCommand *cmd = GLRenderer::makeCharQuad(*pc, this->fgColor, &this->rect);
 		this->drawCmds.emplace_back(cmd);
 	    }

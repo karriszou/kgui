@@ -1,8 +1,9 @@
 #ifndef STB_FONT
 #define STB_FONT
 
-#include <iostream>
 #include "stb_truetype.h"
+#include <iostream>
+#include <memory>
 
 struct PackedCharactor
 {
@@ -22,7 +23,7 @@ public:
     StbFont(const char * fontfile);	// ttf font file path
     ~StbFont();
 
-    PackedCharactor* getPackedCharactor(wchar_t c, int fontSize, float *x = NULL, float *y = NULL);
+    std::shared_ptr<PackedCharactor> getPackedCharactor(wchar_t c, int fontSize, float *x = nullptr, float *y = nullptr);
 
     float getCharactorWidth(wchar_t c, int fontSize);
 

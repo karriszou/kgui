@@ -1,4 +1,5 @@
 #include "Label.h"
+#include <memory>
 
 
 BEGIN_GUI
@@ -95,10 +96,11 @@ std::vector<DrawCommand *>& Label::getDrawCmds()
 	    std::cout << "Warnning::Text::getDrawCmds: Vertical text align must be top, center or bottom!" << std::endl;
     }
 
+
     // Make text command
     for(wchar_t c : this->text)
     {
-	PackedCharactor *pc = stbfont.getPackedCharactor(c, this->fontSize, &x, &y);
+	std::shared_ptr<PackedCharactor> pc = stbfont.getPackedCharactor(c, this->fontSize, &x, &y);
 	// gui::VertexData vtxdata[] =
 	// 	{
 	// 	 { pc.x0, pc.y0,	pc.s0, pc.t0,	fontColor.x, fontColor.y, fontColor.z, fontColor.w },
@@ -115,7 +117,7 @@ std::vector<DrawCommand *>& Label::getDrawCmds()
 
 	gui::DrawCommand *cmd = GLRenderer::makeCharQuad(*pc, this->fontColor, &this->rect);
 	this->drawCmds.emplace_back(cmd);
-	delete pc;
+	// delete pc;
     }
 
     return this->drawCmds;	// @IDrawable

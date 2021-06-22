@@ -17,13 +17,22 @@ StbFont::StbFont(const char * fontfile)
 
     // get file size(in bytes)
     fseek(file, 0, SEEK_END);
-    long int filesize = ftell(file);
+    this->filesize = ftell(file);
     fseek(file, 0, SEEK_SET);
     
     this->ttf_buffer = new unsigned char[filesize];
     fread(this->ttf_buffer, 1, filesize, file);
     fclose(file);
     stbtt_InitFont(&this->font, this->ttf_buffer, 0);
+}
+
+StbFont::StbFont(const StbFont& other)
+    :filepath(other.filepath),
+     filesize(other.filesize),
+     font(other.font)
+{
+    this->ttf_buffer = new unsigned char[filesize];
+    memcpy(this->ttf_buffer, other.ttf_buffer, filesize);
 }
 
 std::shared_ptr<PackedCharactor> StbFont::getPackedCharactor(wchar_t c, int fontSize, float *x, float *y)
@@ -57,7 +66,7 @@ std::shared_ptr<PackedCharactor> StbFont::getPackedCharactor(wchar_t c, int font
     stbtt_GetPackedQuad(pdata, bw, bh, 0, x, y, &q, 1);
     
     PackedCharactor *pchar = new PackedCharactor();
-    pchar->bimap = atlas;
+    pchar->bitmap = atlas;
     pchar->bw = bw; pchar->bh = bh;
     pchar->x0 = q.x0; pchar->s0 = q.s0;
     pchar->y0 = q.y0; pchar->t0 = q.t0;
@@ -107,5 +116,5 @@ float StbFont::getFontHeight(int fontSize)
 
 StbFont::~StbFont()
 {
-    // delete this->ttf_buffer;
+    delete [] this->ttf_buffer;
 }

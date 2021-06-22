@@ -489,7 +489,7 @@ gui::DrawCommand* GLRenderer::makeCharQuad(PackedCharactor& pc, math::vec4 color
     gui::DrawCommand *cmd = new gui::DrawCommand(DrawType::Text);
     cmd->setVtxData(vtxdata, sizeof(vtxdata) / sizeof(gui::VertexData));
     cmd->setIdxData(indices, sizeof(indices) / sizeof(unsigned int));
-    cmd->setTexture(pc.bw, pc.bh, pc.bimap, Alpha);
+    cmd->setTexture(pc.bw, pc.bh, pc.bitmap, Alpha);
     if(clip) cmd->clip = clip;
     return cmd;
 }

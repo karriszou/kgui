@@ -25,59 +25,59 @@ Progressbar::Progressbar(float min,
 }
 
 
-std::vector<DrawCommand>& Progressbar::getDrawCmds()
+std::vector<DrawCommand *>& Progressbar::getDrawCmds()
 {
-    this->drawCmds.clear();
+    this->clearDrawCmds();
 
     if(this->radius > 0)
     {
 	// Make background rectangle command
-	gui::DrawCommand& bg = GLRenderer::makeFillRoundRect(this->rect, this->radius, this->bgColor, this->bgTexture);
+	gui::DrawCommand *bg = GLRenderer::makeFillRoundRect(this->rect, this->radius, this->bgColor, this->bgTexture);
 	this->drawCmds.emplace_back(bg);
 	
 	// Make fill rectangle command
 	// Rect rect_fill(rect.x, rect.y, (value - min) / (max - min) * rect.w, rect.h);
 	Rect rect_fill(rect);
 	rect_fill.scale((value - min) / (max - min), 1);
-	gui::DrawCommand& fill = GLRenderer::makeFillRoundRect(rect_fill, this->radius, this->fillColor, this->fillTexture);
+	gui::DrawCommand *fill = GLRenderer::makeFillRoundRect(rect_fill, this->radius, this->fillColor, this->fillTexture);
 	this->drawCmds.emplace_back(fill);
 	if(this->fillTexture)
 	{
-	    gui::DrawCommand& fill_bg = GLRenderer::makeFillRoundRect(this->rect, this->radius, this->fillColor, this->fillTexture);
-	    fill_bg.clip = new Rect(rect_fill);
+	    gui::DrawCommand *fill_bg = GLRenderer::makeFillRoundRect(this->rect, this->radius, this->fillColor, this->fillTexture);
+	    fill_bg->clip = new Rect(rect_fill);
 	    this->drawCmds.emplace_back(fill_bg);
 	}
 
 	// Make stroke command
 	if(this->thickness > 0)
 	{
-	    gui::DrawCommand& stroke = GLRenderer::makeRoundRect(this->rect, this->radius, this->borderColor, this->thickness);
+	    gui::DrawCommand *stroke = GLRenderer::makeRoundRect(this->rect, this->radius, this->borderColor, this->thickness);
 	    this->drawCmds.emplace_back(stroke);
 	}
     }
     else
     {
 	// Make background rectangle command
-	gui::DrawCommand& bg = GLRenderer::makeFillRect(this->rect, this->bgColor, this->bgTexture);
+	gui::DrawCommand *bg = GLRenderer::makeFillRect(this->rect, this->bgColor, this->bgTexture);
 	this->drawCmds.emplace_back(bg);
 	
 	// Make fill rectangle command
 	// Rect rect_fill(rect.x, rect.y, (value - min) / (max - min) * rect.w, rect.h);
 	Rect rect_fill(rect);
 	rect_fill.scale((value - min) / (max - min), 1);
-	gui::DrawCommand& fill = GLRenderer::makeFillRect(rect_fill, this->fillColor, NULL);
+	gui::DrawCommand *fill = GLRenderer::makeFillRect(rect_fill, this->fillColor, NULL);
 	this->drawCmds.emplace_back(fill);
 	if(this->fillTexture)
 	{
-	    gui::DrawCommand& fill_bg = GLRenderer::makeFillRect(this->rect, this->fillColor, this->fillTexture);
-	    fill_bg.clip = new Rect(rect_fill);
+	    gui::DrawCommand *fill_bg = GLRenderer::makeFillRect(this->rect, this->fillColor, this->fillTexture);
+	    fill_bg->clip = new Rect(rect_fill);
 	    this->drawCmds.emplace_back(fill_bg);
 	}
 
 	// Make stroke command
 	if(this->thickness > 0)
 	{
-	    gui::DrawCommand& stroke = GLRenderer::makeRectangle(this->rect, this->borderColor, this->thickness);
+	    gui::DrawCommand *stroke = GLRenderer::makeRectangle(this->rect, this->borderColor, this->thickness);
 	    this->drawCmds.emplace_back(stroke);
 	}
     }

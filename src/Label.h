@@ -31,7 +31,7 @@ public:
 
     void align(gui::Align horzontal = gui::Align::Center, gui::Align vertical = gui::Align::Center);
 
-    std::vector<DrawCommand>& getDrawCmds() override;
+    std::vector<DrawCommand *>& getDrawCmds() override;
 
     // protected:
     // Rect *getEvenRegion() override;

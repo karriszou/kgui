@@ -101,6 +101,19 @@ void INotifiable::onEven(GUIEven& even)
     (void)even;
 }
 
+
+//
+// IDrawable
+//
+
+void IDrawable::clearDrawCmds()
+{
+    for (DrawCommand *cmd : this->drawCmds)
+	delete cmd;
+    this->drawCmds.clear();
+    // this->drawCmds.shrink_to_fit();
+}
+
 GUI::~GUI()
 {
     std::vector<GUI *>::iterator it = std::find(GUI::childrens.begin(), GUI::childrens.end(), this);
@@ -131,28 +144,28 @@ Container::Container(math::vec4 bgColor,
 
 }
 
-std::vector<DrawCommand>& Container::getDrawCmds()
+std::vector<DrawCommand *>& Container::getDrawCmds()
 {
-    this->drawCmds.clear();
+    this->clearDrawCmds();
 
     if(this->radius > 0)
     {
 	// Make background fill rect command
-	gui::DrawCommand& bg = GLRenderer::makeFillRoundRect(this->rect, this->radius, this->bgColor, this->texture);
+	gui::DrawCommand *bg = GLRenderer::makeFillRoundRect(this->rect, this->radius, this->bgColor, this->texture);
 	this->drawCmds.emplace_back(bg);
 
 	// Make border command
-	gui::DrawCommand& border = GLRenderer::makeRoundRect(this->rect, this->radius, this->borderColor, this->thickness);
+	gui::DrawCommand *border = GLRenderer::makeRoundRect(this->rect, this->radius, this->borderColor, this->thickness);
 	this->drawCmds.emplace_back(border);
     }
     else
     {
 	// Make background fill rect command
-	gui::DrawCommand& bg = GLRenderer::makeFillRect(this->rect, this->bgColor, this->texture);
+	gui::DrawCommand *bg = GLRenderer::makeFillRect(this->rect, this->bgColor, this->texture);
 	this->drawCmds.emplace_back(bg);
 
 	// Make border command
-	gui::DrawCommand& border = GLRenderer::makeRectangle(this->rect, this->borderColor, this->thickness);
+	gui::DrawCommand *border = GLRenderer::makeRectangle(this->rect, this->borderColor, this->thickness);
 	this->drawCmds.emplace_back(border);
     }
 
@@ -360,5 +373,12 @@ void DrawCommand::setTexture(int w, int h, unsigned char *data, GLTextureFormat 
     this->texture = new GLTexture(w, h, data, format);
 }
 
+DrawCommand::~DrawCommand()
+{
+    vtxData.clear();
+    idxData.clear();
+    delete this->texture;
+    this->texture = nullptr;
+}
     
 END_GUI

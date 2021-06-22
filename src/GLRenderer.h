@@ -60,24 +60,25 @@ public:
 	this->w = w; this->h = h;
     }
 
-    void draw(const gui::DrawCommand& cmd);
+    void draw(const gui::DrawCommand* cmd);
 
     void draw(gui::IDrawable& drawable);
 
 
-    static gui::DrawCommand& makeRectangle(const Rect& rect, math::vec4 color = math::vec4(1), float lineSize = 1);
+    static gui::DrawCommand* makeRectangle(const Rect& rect, math::vec4 color = math::vec4(1), float lineSize = 1);
 
-    static gui::DrawCommand& makeFillRect(const Rect& rect, math::vec4 color = math::vec4(1), GLTexture *texture = NULL);
+    static gui::DrawCommand* makeFillRect(const Rect& rect, math::vec4 color = math::vec4(1), GLTexture *texture = NULL);
 
-    static gui::DrawCommand& makeCircle(float x, float y, float r, math::vec4 color = math::vec4(1), float lineSize = 1, int segment = 28);
+    static gui::DrawCommand* makeCircle(float x, float y, float r, math::vec4 color = math::vec4(1), float lineSize = 1, int segment = 28);
 
-    static gui::DrawCommand& makeFillCircle(float x, float y, float r, math::vec4 color = math::vec4(1), GLTexture *texture = NULL, int segment = 28);
+    static gui::DrawCommand* makeFillCircle(float x, float y, float r, math::vec4 color = math::vec4(1), GLTexture *texture = NULL, int segment = 28);
 
-    static gui::DrawCommand& makeRoundRect(const Rect& rect, float r, math::vec4 color = math::vec4(1), float lineSize = 1, int segment = 8);
+    static gui::DrawCommand* makeRoundRect(const Rect& rect, float r, math::vec4 color = math::vec4(1), float lineSize = 1, int segment = 8);
 
-    static gui::DrawCommand& makeFillRoundRect(const Rect& rect, float r, math::vec4 color = math::vec4(1), GLTexture *texture = NULL, int segment = 8);
+    static gui::DrawCommand* makeFillRoundRect(const Rect& rect, float r, math::vec4 color = math::vec4(1), GLTexture *texture = NULL, int segment = 8);
 
-    static gui::DrawCommand& makeCharQuad(PackedCharactor& pc, math::vec4 color = math::vec4(1), Rect *clip = NULL);
+    static gui::DrawCommand* makeCharQuad(PackedCharactor& pc, math::vec4 color = math::vec4(1), Rect *clip = NULL);
+
 
 
     void drawRectangle(const Rect& rect, math::vec4 color = math::vec4(1), float lineSize = 1);
@@ -200,7 +201,7 @@ struct GLTexture
 public:
     unsigned int id;
 
-    GLTexture(int w, int h, unsigned char *data, GLTextureFormat format = Rgba)
+    GLTexture(int w, int h, unsigned char * data, GLTextureFormat format = Rgba)
     {
     	glGenTextures(1, &this->id);
     	glBindTexture(GL_TEXTURE_2D, this->id);
@@ -210,8 +211,8 @@ public:
     	    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     	    break;
     	case Alpha:
-    	    // glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, w, h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, data);
-    	    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, w, h, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+	    // glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, w, h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, data);
+	    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, w, h, 0, GL_RED, GL_UNSIGNED_BYTE, data);
     	    break;
     	default:
     	case Rgba:
@@ -220,8 +221,16 @@ public:
     	}
     	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glBindTexture(GL_TEXTURE_2D, 0);
     }
+
+    ~GLTexture()
+    {
+	glDeleteTextures(1, &this->id);
+    }
+
 };
 
 

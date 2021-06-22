@@ -9,6 +9,11 @@ struct PackedCharactor
     unsigned char * bimap;
     int bw, bh;
     float x0, y0, s0, t0, x1, y1, s1, t1;
+    ~PackedCharactor()
+    {
+	delete [] bimap;
+	// bimap = nullptr;
+    }
 };
 
 class StbFont
@@ -17,7 +22,7 @@ public:
     StbFont(const char * fontfile);	// ttf font file path
     ~StbFont();
 
-    PackedCharactor& getPackedCharactor(wchar_t c, int fontSize, float *x = NULL, float *y = NULL);
+    PackedCharactor* getPackedCharactor(wchar_t c, int fontSize, float *x = NULL, float *y = NULL);
 
     float getCharactorWidth(wchar_t c, int fontSize);
 

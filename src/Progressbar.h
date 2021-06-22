@@ -26,7 +26,7 @@ public:
 		math::vec4 fillColor = math::vec4(.6, .6, .6, 1));
 
 
-    std::vector<DrawCommand>& getDrawCmds() override;
+    std::vector<DrawCommand *>& getDrawCmds() override;
 
     float getValue();
 

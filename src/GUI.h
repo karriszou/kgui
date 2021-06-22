@@ -29,9 +29,11 @@ public:
 class IDrawable
 {
 public:
-    virtual std::vector<DrawCommand>& getDrawCmds() = 0;
+    virtual std::vector<DrawCommand *>& getDrawCmds() = 0;
 protected:
-    std::vector<DrawCommand> drawCmds;
+    std::vector<DrawCommand *> drawCmds;
+
+    void clearDrawCmds();
 };
 
 
@@ -145,7 +147,7 @@ public:
 	      float thickness = 1,
 	      float radius = 0);
 
-    std::vector<DrawCommand>& getDrawCmds();
+    std::vector<DrawCommand *>& getDrawCmds();
 
 private:
 
@@ -200,9 +202,28 @@ struct DrawCommand
     float pointSize;		// gl attribute
     float lineSize;			// gl attribute
 
+    // DrawCommand(const DrawCommand& other) = delete;
+    // DrawCommand(const DrawCommand& other)
+    // 	:type(other.type),
+    // 	 vtxData(other.vtxData),
+    // 	 idxData(other.idxData),
+    // 	 color(other.color),
+    // 	 factor(other.factor),
+    // 	 pointSize(other.pointSize),
+    // 	 lineSize(other.lineSize)
+    // {
+    // 	int w = 10, h = 10;
+    // 	unsigned char data[] = { 0, 0 };
+    // 	GLTextureFormat format = GLTextureFormat::Rgba;
+    // 	if (other.texture)
+    // 	    this->texture = new GLTexture(w, h, data, format);
+    // 	if (other.clip)
+    // 	    this->clip = new Rect(other.clip->x, other.clip->y, other.clip->w, other.clip->h);
+    // }
+
     explicit
     DrawCommand(DrawType type,
-		GLTexture *texture = NULL,
+		GLTexture *texture = nullptr,
 		math::vec4 color = math::vec4(1.0),
 		float factor = 1.0,
 		float psize = 1.0,
@@ -213,7 +234,7 @@ struct DrawCommand
 	 texture(texture),
 	 color(color),
 	 factor(factor),
-	 clip(NULL),
+	 clip(nullptr),
 	 pointSize(psize),
 	 lineSize(lsize)
     {
@@ -223,7 +244,7 @@ struct DrawCommand
     DrawCommand(DrawType type,
 		const std::vector<VertexData>& vdata,
 		const std::vector<unsigned int>& idata,
-		GLTexture *texture = NULL,
+		GLTexture *texture = nullptr,
 		math::vec4 color = math::vec4(1.0),
 		float factor = 1.0,
 		float psize = 1.0,
@@ -234,12 +255,14 @@ struct DrawCommand
 	 texture(texture),
 	 color(color),
 	 factor(factor),
-	 clip(NULL),
+	 clip(nullptr),
 	 pointSize(psize),
 	 lineSize(lsize)
     {
 	
     }
+
+    ~DrawCommand();
 
     void setVtxData(VertexData *vdata, int count);
 

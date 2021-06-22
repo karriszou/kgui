@@ -53,6 +53,7 @@ void Text::setText(const std::string& text)
     const char *src = text.c_str();
     std::mbstate_t state = std::mbstate_t();
     size_t len = std::mbsrtowcs(NULL, (const char **)&text, 0, &state) /* + 1 */;
+    this->text.clear();
     this->text = *new std::wstring(len, L' ');
     std::mbsrtowcs(&this->text[0], &src, text.size(), &state);
 }
@@ -73,15 +74,15 @@ void Text::setTexture(int w, int h, unsigned char *data, GLTextureFormat format)
     this->texture = new GLTexture(w, h, data, format);
 }
 
-std::vector<DrawCommand>& Text::getDrawCmds()
+std::vector<DrawCommand *>& Text::getDrawCmds()
 {
     if(this->fontSize < 1.0) std::cout << "Warnning::Text::getDrawCmds: font size is too small!" << std::endl;
-    this->drawCmds.clear();
+    this->clearDrawCmds();
 
     // Make filled-rectangle command
     if(this->radius > 0)
     {
-	gui::DrawCommand& cmd = GLRenderer::makeFillRoundRect(this->rect, this->radius, this->bgColor, this->texture);
+	gui::DrawCommand *cmd = GLRenderer::makeFillRoundRect(this->rect, this->radius, this->bgColor, this->texture);
 	this->drawCmds.emplace_back(cmd);
     }
     else
@@ -104,7 +105,7 @@ std::vector<DrawCommand>& Text::getDrawCmds()
 	// if(this->texture) cmd.setTexture(this->texture);
 	// this->drawCmds.emplace_back(cmd);
 
-	gui::DrawCommand& cmd = GLRenderer::makeFillRect(this->rect, this->bgColor, this->texture);
+	gui::DrawCommand *cmd = GLRenderer::makeFillRect(this->rect, this->bgColor, this->texture);
 	this->drawCmds.emplace_back(cmd);
     }
 	
@@ -124,7 +125,7 @@ std::vector<DrawCommand>& Text::getDrawCmds()
 	// cmd.setIdxData(indices, sizeof(indices) / sizeof(unsigned int));
 	// cmd.lineSize = this->thickness;
 
-	gui::DrawCommand& cmd = GLRenderer::makeRectangle(this->rect, this->borderColor, this->thickness);
+	gui::DrawCommand *cmd = GLRenderer::makeRectangle(this->rect, this->borderColor, this->thickness);
 	this->drawCmds.emplace_back(cmd);
     }
 
@@ -168,7 +169,7 @@ std::vector<DrawCommand>& Text::getDrawCmds()
 
 	for(wchar_t c : this->text)
 	{
-	    PackedCharactor& pc = font.getPackedCharactor(c, this->fontSize, &x, &y);
+	    PackedCharactor *pc = font.getPackedCharactor(c, this->fontSize, &x, &y);
 	    // gui::VertexData vtxdata[] =
 	    //     {
 	    //      { pc.x0, pc.y0,	pc.s0, pc.t0,	fgColor.x, fgColor.y, fgColor.z, fgColor.w },
@@ -185,8 +186,9 @@ std::vector<DrawCommand>& Text::getDrawCmds()
 	    // cmd.setTexture(pc.bw, pc.bh, pc.bimap, Alpha);
 	    // cmd.clip = &rect;
 
-	    gui::DrawCommand& cmd = GLRenderer::makeCharQuad(pc, this->fgColor, &this->rect);
+	    gui::DrawCommand *cmd = GLRenderer::makeCharQuad(*pc, this->fgColor, &this->rect);
 	    this->drawCmds.emplace_back(cmd);
+	    delete pc;
 	}
     }
     return this->drawCmds;

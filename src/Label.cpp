@@ -42,6 +42,7 @@ void Label::setText(const std::string& text)
     const char *src = text.c_str();
     std::mbstate_t state = std::mbstate_t();
     size_t len = std::mbsrtowcs(NULL, (const char **)&text, 0, &state) /* + 1 */;
+    this->text.clear();
     this->text = *new std::wstring(len, L' ');
     std::mbsrtowcs(&this->text[0], &src, text.size(), &state);
 }
@@ -52,10 +53,11 @@ void Label::align(gui::Align horzontal, gui::Align vertical)
     this->vAlign = vertical;
 }
 
-std::vector<DrawCommand>& Label::getDrawCmds()
+std::vector<DrawCommand *>& Label::getDrawCmds()
 {
     if(this->fontSize < 1.0) std::cout << "Warnning::Label::getDrawCmds: fontSize is too small!" << std::endl;
-    this->drawCmds.clear();
+    
+    this->clearDrawCmds();
 
     float x, y;
     // Align text
@@ -96,7 +98,7 @@ std::vector<DrawCommand>& Label::getDrawCmds()
     // Make text command
     for(wchar_t c : this->text)
     {
-	PackedCharactor& pc = stbfont.getPackedCharactor(c, this->fontSize, &x, &y);
+	PackedCharactor *pc = stbfont.getPackedCharactor(c, this->fontSize, &x, &y);
 	// gui::VertexData vtxdata[] =
 	// 	{
 	// 	 { pc.x0, pc.y0,	pc.s0, pc.t0,	fontColor.x, fontColor.y, fontColor.z, fontColor.w },
@@ -110,9 +112,12 @@ std::vector<DrawCommand>& Label::getDrawCmds()
 	// cmd.setIdxData(idxdata, 6);
 	// cmd.setTexture(pc.bw, pc.bh, pc.bimap, Alpha);
 	// cmd.clip = &this->rect;
-	gui::DrawCommand& cmd = GLRenderer::makeCharQuad(pc, this->fontColor, &this->rect);
+
+	gui::DrawCommand *cmd = GLRenderer::makeCharQuad(*pc, this->fontColor, &this->rect);
 	this->drawCmds.emplace_back(cmd);
+	delete pc;
     }
+
     return this->drawCmds;	// @IDrawable
 }
 

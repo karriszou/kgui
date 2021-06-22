@@ -60,13 +60,13 @@ void Radio::uncheck()
 	this->onCheck(this, this->value);
 }
 
-std::vector<DrawCommand>& Radio::getDrawCmds()
+std::vector<DrawCommand *>& Radio::getDrawCmds()
 {
-    this->drawCmds.clear();
+    this->clearDrawCmds();
 
     // Make check border command
     Rect rect_border(rect.x, rect.y, rect.h, rect.h);
-    gui::DrawCommand& border = GLRenderer::makeFillCircle(rect_border.center().x, rect_border.center().y, rect_border.w / 2, this->bgColor);
+    gui::DrawCommand *border = GLRenderer::makeFillCircle(rect_border.center().x, rect_border.center().y, rect_border.w / 2, this->bgColor);
     this->drawCmds.emplace_back(border);
 
     // Make check circle command
@@ -74,7 +74,7 @@ std::vector<DrawCommand>& Radio::getDrawCmds()
     {
 	Rect rect_check(rect_border);
 	rect_check.scaleFromCenter(0.6, 0.6);
-	gui::DrawCommand& check = GLRenderer::makeFillCircle(rect_check.center().x, rect_check.center().y, rect_check.w / 2, this->fillColor);
+	gui::DrawCommand *check = GLRenderer::makeFillCircle(rect_check.center().x, rect_check.center().y, rect_check.w / 2, this->fillColor);
 	this->drawCmds.emplace_back(check);
     }
 
@@ -90,9 +90,10 @@ std::vector<DrawCommand>& Radio::getDrawCmds()
 	Rect *rect_text = new Rect(x, y - font_height, this->rect.w - rect_border.w, this->rect.h);
 	for(wchar_t c : this->text)
 	{
-	    PackedCharactor& pc = stbfont.getPackedCharactor(c, this->fontSize, &x, &y);
-	    gui::DrawCommand& cmd = GLRenderer::makeCharQuad(pc, this->fontColor, rect_text);
+	    PackedCharactor *pc = stbfont.getPackedCharactor(c, this->fontSize, &x, &y);
+	    gui::DrawCommand *cmd = GLRenderer::makeCharQuad(*pc, this->fontColor, rect_text);
 	    this->drawCmds.emplace_back(cmd);
+	    delete pc;
 	}
     }
 

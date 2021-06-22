@@ -29,7 +29,7 @@ public:
 	   math::vec4 sliderColor = math::vec4(.8, .8, .8, 1));
 
 
-    std::vector<DrawCommand>& getDrawCmds() override;
+    std::vector<DrawCommand *>& getDrawCmds() override;
 
     float getValue();
 

@@ -26,7 +26,7 @@ StbFont::StbFont(const char * fontfile)
     stbtt_InitFont(&this->font, this->ttf_buffer, 0);
 }
 
-PackedCharactor& StbFont::getPackedCharactor(wchar_t c, int fontSize, float *x, float *y)
+PackedCharactor* StbFont::getPackedCharactor(wchar_t c, int fontSize, float *x, float *y)
 {
     static stbtt_pack_context pc;
     static stbtt_packedchar pdata[1];
@@ -64,7 +64,7 @@ PackedCharactor& StbFont::getPackedCharactor(wchar_t c, int fontSize, float *x, 
     pchar->x1 = q.x1; pchar->s1 = q.s1;
     pchar->y1 = q.y1; pchar->t1 = q.t1;
 
-    return *pchar;
+    return pchar;
 }
 
 float StbFont::getCharactorWidth(wchar_t c, int fontSize)

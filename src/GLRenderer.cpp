@@ -40,7 +40,7 @@ GLRenderer::    GLRenderer(float x, float y, float w, float h)
 struct glStatus
 {
     GLboolean blend, cullFace, depthTest;
-    GLint blendSrc, blendDst, polygonModes[2];
+    GLint blendFunc, blendSrc, blendDst, polygonModes[2];
 };
 
 glStatus getGLStatus()
@@ -49,6 +49,7 @@ glStatus getGLStatus()
     glGetBooleanv(GL_BLEND, &status.blend);
     glGetBooleanv(GL_CULL_FACE, &status.cullFace);
     glGetBooleanv(GL_DEPTH_TEST, &status.depthTest);
+    glGetIntegerv(GL_BLEND_EQUATION, &status.blendFunc);
     glGetIntegerv(GL_BLEND_SRC_ALPHA, &status.blendSrc);
     glGetIntegerv(GL_BLEND_DST_ALPHA, &status.blendDst);
     glGetIntegerv(GL_POLYGON_MODE, status.polygonModes);
@@ -61,32 +62,34 @@ void setGLStatus(glStatus status)
     else			glDisable(GL_BLEND);
     if (status.cullFace)	glEnable(GL_CULL_FACE);
     if (status.depthTest)	glEnable(GL_DEPTH_TEST);
+    glBlendEquation(status.blendFunc);
     glPolygonMode(GL_FRONT_AND_BACK, status.polygonModes[0]);
 }
 
-void GLRenderer::draw(const gui::DrawCommand& cmd)
+void GLRenderer::draw(const gui::DrawCommand* cmd)
 {
     // Fill buffer data
     glBindVertexArray(this->vao);
     glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(gui::VertexData) * cmd.vtxData.size(), &cmd.vtxData[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(gui::VertexData) * cmd->vtxData.size(), &cmd->vtxData[0], GL_STATIC_DRAW);
 
     // Extract gl status
     glStatus status = getGLStatus();
 
     // Set gl status
     glEnable(GL_BLEND);
+    glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    bool enableTex = cmd.texture != NULL;
+    bool enableTex = cmd->texture != NULL;
 
     // Set shader state
     GLShader *shader = NULL;
-    if(cmd.type == Text)
+    if(cmd->type == Text)
 	shader = GLRenderer::TextShader;
     else if(enableTex)
 	shader = GLRenderer::TextureShader;
@@ -99,11 +102,11 @@ void GLRenderer::draw(const gui::DrawCommand& cmd)
 	return;
     }
 
-    if(cmd.clip != NULL)
+    if(cmd->clip != NULL)
     {
 	glEnable(GL_SCISSOR_TEST);
-	// glScissor(cmd.clip->x, cmd.clip->y, cmd.clip->w, cmd.clip->h);
-	glScissor(cmd.clip->x, this->h - cmd.clip->h - cmd.clip->y, cmd.clip->w, cmd.clip->h);	// Flip vertical
+	// glScissor(cmd->clip->x, cmd->clip->y, cmd->clip->w, cmd->clip->h);
+	glScissor(cmd->clip->x, this->h - cmd->clip->h - cmd->clip->y, cmd->clip->w, cmd->clip->h);	// Flip vertical
     }
 
     float ortho[4][4] =
@@ -116,23 +119,23 @@ void GLRenderer::draw(const gui::DrawCommand& cmd)
 
     shader->use();
     shader->setMat4("projection", ortho);
-    shader->setVec4("color", cmd.color.get());
-    shader->setFloat("factor", cmd.factor);
+    shader->setVec4("color", cmd->color.get());
+    shader->setFloat("factor", cmd->factor);
     
     if(enableTex)
     {
-	// std::cout << cmd.texture->id << std::endl;
+	// std::cout << cmd->texture->id << std::endl;
     	shader->setInt("image", 0);
     	glActiveTexture(GL_TEXTURE0);
-    	glBindTexture(GL_TEXTURE_2D, cmd.texture->id);
+    	glBindTexture(GL_TEXTURE_2D, cmd->texture->id);
     }
 
     // Draw call by difference drawtype
-    switch(cmd.type)
+    switch(cmd->type)
     {
     case Point:
-	glPointSize(cmd.pointSize);
-	glDrawElements(GL_POINTS, cmd.idxData.size(), GL_UNSIGNED_INT, &cmd.idxData[0]);
+	glPointSize(cmd->pointSize);
+	glDrawElements(GL_POINTS, cmd->idxData.size(), GL_UNSIGNED_INT, &cmd->idxData[0]);
 	glPointSize(1.0);
     	break;
 
@@ -143,20 +146,20 @@ void GLRenderer::draw(const gui::DrawCommand& cmd)
     	break;
 
     case Rectangle:
-	glLineWidth(cmd.lineSize);
-	glDrawElements(GL_LINE_LOOP, cmd.idxData.size(), GL_UNSIGNED_INT, &cmd.idxData[0]);
+	glLineWidth(cmd->lineSize);
+	glDrawElements(GL_LINE_LOOP, cmd->idxData.size(), GL_UNSIGNED_INT, &cmd->idxData[0]);
 	glLineWidth(1.0);
     	break;
 
     case RoundRect:
-	glLineWidth(cmd.lineSize);
-	glDrawElements(GL_LINE_LOOP, cmd.idxData.size(), GL_UNSIGNED_INT, &cmd.idxData[0]);
+	glLineWidth(cmd->lineSize);
+	glDrawElements(GL_LINE_LOOP, cmd->idxData.size(), GL_UNSIGNED_INT, &cmd->idxData[0]);
 	glLineWidth(1.0);
     	break;
 
     case Circle:
-	glLineWidth(cmd.lineSize);
-	glDrawElements(GL_LINE_LOOP, cmd.idxData.size(), GL_UNSIGNED_INT, &cmd.idxData[0]);
+	glLineWidth(cmd->lineSize);
+	glDrawElements(GL_LINE_LOOP, cmd->idxData.size(), GL_UNSIGNED_INT, &cmd->idxData[0]);
 	glLineWidth(1.0);
     	break;
 
@@ -166,25 +169,25 @@ void GLRenderer::draw(const gui::DrawCommand& cmd)
     case FillTriangle:
     	break;
     case FillRect:
-	glDrawElements(GL_TRIANGLES, cmd.idxData.size(), GL_UNSIGNED_INT, &cmd.idxData[0]);
+	glDrawElements(GL_TRIANGLES, cmd->idxData.size(), GL_UNSIGNED_INT, &cmd->idxData[0]);
     	break;
 
     case FillRoundRect:
-	glDrawElements(GL_TRIANGLE_FAN, cmd.idxData.size(), GL_UNSIGNED_INT, &cmd.idxData[0]);
+	glDrawElements(GL_TRIANGLE_FAN, cmd->idxData.size(), GL_UNSIGNED_INT, &cmd->idxData[0]);
     	break;
 
     case FillCircle:
-	glDrawElements(GL_TRIANGLE_FAN, cmd.idxData.size(), GL_UNSIGNED_INT, &cmd.idxData[0]);
+	glDrawElements(GL_TRIANGLE_FAN, cmd->idxData.size(), GL_UNSIGNED_INT, &cmd->idxData[0]);
     	break;
 
     case FillEllipse:
     	break;
     case Text:
-	glDrawElements(GL_TRIANGLES, cmd.idxData.size(), GL_UNSIGNED_INT, &cmd.idxData[0]);
+	glDrawElements(GL_TRIANGLES, cmd->idxData.size(), GL_UNSIGNED_INT, &cmd->idxData[0]);
 	break;
     }
 
-    if(cmd.clip) glDisable(GL_SCISSOR_TEST);
+    if(cmd->clip) glDisable(GL_SCISSOR_TEST);
     shader->use(false);
 
     // Restore gl status
@@ -193,11 +196,13 @@ void GLRenderer::draw(const gui::DrawCommand& cmd)
 
 void GLRenderer::draw(gui::IDrawable& drawable)
 {
-    for(gui::DrawCommand& cmd : drawable.getDrawCmds())
-	    this->draw(cmd);
+    for(gui::DrawCommand* cmd : drawable.getDrawCmds())
+    {
+    	this->draw(cmd);
+    }
 }
 
-gui::DrawCommand& GLRenderer::makeRectangle(const Rect& rect, math::vec4 color, float lineSize)
+gui::DrawCommand* GLRenderer::makeRectangle(const Rect& rect, math::vec4 color, float lineSize)
 {
     gui::VertexData vtxdata[] =
 	{{ rect.x,		rect.y ,		0, 1,	color.x, color.y, color.z, color.w },
@@ -205,14 +210,14 @@ gui::DrawCommand& GLRenderer::makeRectangle(const Rect& rect, math::vec4 color, 
 	 { rect.x + rect.w,	rect.y + rect.h,	1, 0,	color.x, color.y, color.z, color.w },
 	 { rect.x,		rect.y + rect.h,	0, 0,	color.x, color.y, color.z, color.w }};
     unsigned int indices[] = { 0, 1, 2, 3 };	
-    gui::DrawCommand& cmd = *new gui::DrawCommand(DrawType::Rectangle);
-    cmd.setVtxData(vtxdata, sizeof(vtxdata) / sizeof(gui::VertexData));
-    cmd.setIdxData(indices, sizeof(indices) / sizeof(unsigned int));
-    cmd.lineSize = lineSize;
+    gui::DrawCommand *cmd = new gui::DrawCommand(DrawType::Rectangle);
+    cmd->setVtxData(vtxdata, sizeof(vtxdata) / sizeof(gui::VertexData));
+    cmd->setIdxData(indices, sizeof(indices) / sizeof(unsigned int));
+    cmd->lineSize = lineSize;
     return cmd;
 }
 
-gui::DrawCommand& GLRenderer::makeFillRect(const Rect& rect, math::vec4 color, GLTexture *texture)
+gui::DrawCommand* GLRenderer::makeFillRect(const Rect& rect, math::vec4 color, GLTexture *texture)
 {
     bool flip = true;
     gui::VertexData vtxdata[] =
@@ -221,14 +226,14 @@ gui::DrawCommand& GLRenderer::makeFillRect(const Rect& rect, math::vec4 color, G
 	 { rect.x + rect.w,	rect.y + rect.h,	1, flip ? 1.f : 0.f,	color.x, color.y, color.z, color.w },
 	 { rect.x,		rect.y + rect.h,	0, flip ? 1.f : 0.f,	color.x, color.y, color.z, color.w }};
     unsigned int indices[] = { 0, 1, 2, 2, 3, 0 };
-    gui::DrawCommand& cmd = *new gui::DrawCommand(DrawType::FillRect);
-    cmd.setVtxData(vtxdata, sizeof(vtxdata) / sizeof(gui::VertexData));
-    cmd.setIdxData(indices, sizeof(indices) / sizeof(unsigned int));
-    if(texture) cmd.setTexture(texture);
+    gui::DrawCommand *cmd = new gui::DrawCommand(DrawType::FillRect);
+    cmd->setVtxData(vtxdata, sizeof(vtxdata) / sizeof(gui::VertexData));
+    cmd->setIdxData(indices, sizeof(indices) / sizeof(unsigned int));
+    if(texture) cmd->setTexture(texture);
     return cmd;
 }
 
-gui::DrawCommand& GLRenderer::makeCircle(float x, float y, float r, math::vec4 color, float lineSize, int segment)
+gui::DrawCommand* GLRenderer::makeCircle(float x, float y, float r, math::vec4 color, float lineSize, int segment)
 {
     std::vector<gui::VertexData> vtxdata;
     std::vector<unsigned int> indices;
@@ -242,12 +247,12 @@ gui::DrawCommand& GLRenderer::makeCircle(float x, float y, float r, math::vec4 c
 	indices.push_back(i);
 	d += step;
     }
-    gui::DrawCommand& cmd = *new gui::DrawCommand(DrawType::Circle, vtxdata, indices);
-    cmd.lineSize = lineSize;
+    gui::DrawCommand* cmd = new gui::DrawCommand(DrawType::Circle, vtxdata, indices);
+    cmd->lineSize = lineSize;
     return cmd;
 }
 
-gui::DrawCommand& GLRenderer::makeFillCircle(float x, float y, float r, math::vec4 color, GLTexture *texture, int segment)
+gui::DrawCommand* GLRenderer::makeFillCircle(float x, float y, float r, math::vec4 color, GLTexture *texture, int segment)
 {
     std::vector<gui::VertexData> vtxdata;
     std::vector<unsigned int> indices;
@@ -265,12 +270,12 @@ gui::DrawCommand& GLRenderer::makeFillCircle(float x, float y, float r, math::ve
     }
     vtxdata.push_back({ x + r, y, 1, 0.5, color.x, color.y, color.z, color.w });
     indices.push_back(indices.size());
-    gui::DrawCommand& cmd = *new gui::DrawCommand(DrawType::FillCircle, vtxdata, indices);
-    if(texture) cmd.setTexture(texture);
+    gui::DrawCommand *cmd = new gui::DrawCommand(DrawType::FillCircle, vtxdata, indices);
+    if(texture) cmd->setTexture(texture);
     return cmd;
 }
 
-gui::DrawCommand& GLRenderer::makeRoundRect(const Rect& rect, float r, math::vec4 color, float lineSize, int segment)
+gui::DrawCommand* GLRenderer::makeRoundRect(const Rect& rect, float r, math::vec4 color, float lineSize, int segment)
 {
     r = r > std::min(rect.w / 2.0f, rect.h / 2.0f) ? std::min(rect.w / 2.0f, rect.h / 2.0f) : r;
 
@@ -370,12 +375,12 @@ gui::DrawCommand& GLRenderer::makeRoundRect(const Rect& rect, float r, math::vec
 	indices.push_back(idx++);
     }
 
-    gui::DrawCommand& cmd = *new gui::DrawCommand(DrawType::RoundRect, vtxdata, indices);
-    cmd.lineSize = lineSize;
+    gui::DrawCommand *cmd = new gui::DrawCommand(DrawType::RoundRect, vtxdata, indices);
+    cmd->lineSize = lineSize;
     return cmd;
 }
 
-gui::DrawCommand& GLRenderer::makeFillRoundRect(const Rect& rect, float r, math::vec4 color, GLTexture *texture, int segment)
+gui::DrawCommand* GLRenderer::makeFillRoundRect(const Rect& rect, float r, math::vec4 color, GLTexture *texture, int segment)
 {
     r = r > std::min(rect.w / 2.0f, rect.h / 2.0f) ? std::min(rect.w / 2.0f, rect.h / 2.0f) : r;
 
@@ -466,12 +471,12 @@ gui::DrawCommand& GLRenderer::makeFillRoundRect(const Rect& rect, float r, math:
     vtxdata.push_back({ rect.x + rect.w, rect.y + rect.h - r, 1, flip ? 1 - uy : uy, color.x, color.y, color.z, color.w });
     indices.push_back(idx++);
 
-    gui::DrawCommand& cmd = *new gui::DrawCommand(DrawType::FillRoundRect, vtxdata, indices);
-    if(texture) cmd.setTexture(texture);
+    gui::DrawCommand *cmd = new gui::DrawCommand(DrawType::FillRoundRect, vtxdata, indices);
+    if(texture) cmd->setTexture(texture);
     return cmd;
 }
 
-gui::DrawCommand& GLRenderer::makeCharQuad(PackedCharactor& pc, math::vec4 color, Rect *clip)
+gui::DrawCommand* GLRenderer::makeCharQuad(PackedCharactor& pc, math::vec4 color, Rect *clip)
 {
     gui::VertexData vtxdata[] =
         {
@@ -481,11 +486,11 @@ gui::DrawCommand& GLRenderer::makeCharQuad(PackedCharactor& pc, math::vec4 color
          { pc.x0, pc.y1,	pc.s0, pc.t1,	color.x, color.y, color.z, color.w },
         };
     unsigned int indices[] = { 0, 1, 2, 2, 3, 0 };
-    gui::DrawCommand& cmd = *new gui::DrawCommand(DrawType::Text);
-    cmd.setVtxData(vtxdata, sizeof(vtxdata) / sizeof(gui::VertexData));
-    cmd.setIdxData(indices, sizeof(indices) / sizeof(unsigned int));
-    cmd.setTexture(pc.bw, pc.bh, pc.bimap, Alpha);
-    if(clip) cmd.clip = clip;
+    gui::DrawCommand *cmd = new gui::DrawCommand(DrawType::Text);
+    cmd->setVtxData(vtxdata, sizeof(vtxdata) / sizeof(gui::VertexData));
+    cmd->setIdxData(indices, sizeof(indices) / sizeof(unsigned int));
+    cmd->setTexture(pc.bw, pc.bh, pc.bimap, Alpha);
+    if(clip) cmd->clip = clip;
     return cmd;
 }
 

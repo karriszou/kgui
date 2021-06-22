@@ -28,9 +28,9 @@ namespace gui
 
 
 
-    std::vector<DrawCommand>& Slider::getDrawCmds()
+    std::vector<DrawCommand *>& Slider::getDrawCmds()
     {
-	this->drawCmds.clear();
+	this->clearDrawCmds();
 
 	Rect rect_fill(rect);
 	rect_fill.scale((value - min) / (max - min), 1);
@@ -43,55 +43,55 @@ namespace gui
 	if(this->radius > 0)
 	{
 	    // Make background rectangle command
-	    gui::DrawCommand& bg = GLRenderer::makeFillRoundRect(this->rect, this->radius, this->bgColor, this->bgTexture);
+	    gui::DrawCommand *bg = GLRenderer::makeFillRoundRect(this->rect, this->radius, this->bgColor, this->bgTexture);
 	    this->drawCmds.emplace_back(bg);
 	
 	    // Make fill rectangle command
-	    gui::DrawCommand& fill = GLRenderer::makeFillRoundRect(rect_fill, this->radius, this->fillColor, this->fillTexture);
+	    gui::DrawCommand *fill = GLRenderer::makeFillRoundRect(rect_fill, this->radius, this->fillColor, this->fillTexture);
 	    this->drawCmds.emplace_back(fill);
 	    if(this->fillTexture)
 	    {
-		gui::DrawCommand& fill_bg = GLRenderer::makeFillRoundRect(this->rect, this->radius, this->fillColor, this->fillTexture);
-		fill_bg.clip = new Rect(rect_fill);
+		gui::DrawCommand *fill_bg = GLRenderer::makeFillRoundRect(this->rect, this->radius, this->fillColor, this->fillTexture);
+		fill_bg->clip = new Rect(rect_fill);
 		this->drawCmds.emplace_back(fill_bg);
 	    }
 
 	    // Make stroke command
 	    if(this->thickness > 0)
 	    {
-		gui::DrawCommand& stroke = GLRenderer::makeRoundRect(this->rect, this->radius, this->borderColor, this->thickness);
+		gui::DrawCommand *stroke = GLRenderer::makeRoundRect(this->rect, this->radius, this->borderColor, this->thickness);
 		this->drawCmds.emplace_back(stroke);
 	    }
 
 	    // Make slider command
-	    gui::DrawCommand& slider = GLRenderer::makeFillRoundRect(rect_slider, this->radius, this->sliderColor, NULL);
+	    gui::DrawCommand *slider = GLRenderer::makeFillRoundRect(rect_slider, this->radius, this->sliderColor, NULL);
 	    this->drawCmds.emplace_back(slider);
 	}
 	else
 	{
 	    // Make background rectangle command
-	    gui::DrawCommand& bg = GLRenderer::makeFillRect(rect, this->bgColor, this->bgTexture);
+	    gui::DrawCommand *bg = GLRenderer::makeFillRect(rect, this->bgColor, this->bgTexture);
 	    this->drawCmds.emplace_back(bg);
 	
 	    // Make fill rectangle command
-	    gui::DrawCommand& fill = GLRenderer::makeFillRect(rect_fill, this->fillColor, NULL);
+	    gui::DrawCommand *fill = GLRenderer::makeFillRect(rect_fill, this->fillColor, NULL);
 	    this->drawCmds.emplace_back(fill);
 	    if(this->fillTexture)
 	    {
-		gui::DrawCommand& fill_bg = GLRenderer::makeFillRect(this->rect, this->fillColor, this->fillTexture);
-		fill_bg.clip = new Rect(rect_fill);
+		gui::DrawCommand *fill_bg = GLRenderer::makeFillRect(this->rect, this->fillColor, this->fillTexture);
+		fill_bg->clip = new Rect(rect_fill);
 		this->drawCmds.emplace_back(fill_bg);
 	    }
 
 	    // Make stroke command
 	    if(this->thickness > 0)
 	    {
-		gui::DrawCommand& stroke = GLRenderer::makeRectangle(this->rect, this->borderColor, this->thickness);
+		gui::DrawCommand *stroke = GLRenderer::makeRectangle(this->rect, this->borderColor, this->thickness);
 		this->drawCmds.emplace_back(stroke);
 	    }
 
 	    // Make slider rectangle command
-	    gui::DrawCommand& slider = GLRenderer::makeFillRect(rect_slider, this->sliderColor, NULL);
+	    gui::DrawCommand *slider = GLRenderer::makeFillRect(rect_slider, this->sliderColor, NULL);
 	    this->drawCmds.emplace_back(slider);
 	}
 

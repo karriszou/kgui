@@ -35,7 +35,7 @@ public:
 
     inline bool isChecked() { return this->value; }
 
-    std::vector<DrawCommand>& getDrawCmds() override;
+    std::vector<DrawCommand *>& getDrawCmds() override;
 
     inline operator bool() { return this->value; }
 

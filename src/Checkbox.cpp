@@ -55,13 +55,13 @@ void Checkbox::uncheck()
 	this->onCheck(this, this->value);
 }
 
-std::vector<DrawCommand>& Checkbox::getDrawCmds()
+std::vector<DrawCommand *>& Checkbox::getDrawCmds()
 {
-    this->drawCmds.clear();
+    this->clearDrawCmds();
 
     // Make check border command
     Rect rect_border(rect.x, rect.y, rect.h, rect.h);
-    gui::DrawCommand& border = GLRenderer::makeFillRoundRect(rect_border, rect_border.w / 9, this->bgColor);
+    gui::DrawCommand *border = GLRenderer::makeFillRoundRect(rect_border, rect_border.w / 9, this->bgColor);
     this->drawCmds.emplace_back(border);
 
     // Make check square command
@@ -69,7 +69,7 @@ std::vector<DrawCommand>& Checkbox::getDrawCmds()
     {
 	Rect rect_check(rect_border);
 	rect_check.scaleFromCenter(0.6, 0.6);
-	gui::DrawCommand& check = GLRenderer::makeFillRoundRect(rect_check, rect_check.w / 9, this->fillColor);
+	gui::DrawCommand *check = GLRenderer::makeFillRoundRect(rect_check, rect_check.w / 9, this->fillColor);
 	this->drawCmds.emplace_back(check);
     }
 
@@ -85,9 +85,10 @@ std::vector<DrawCommand>& Checkbox::getDrawCmds()
 	Rect *rect_text = new Rect(x, y - font_height, this->rect.w - rect_border.w, this->rect.h);
 	for(wchar_t c : this->text)
 	{
-	    PackedCharactor& pc = stbfont.getPackedCharactor(c, this->fontSize, &x, &y);
-	    gui::DrawCommand& cmd = GLRenderer::makeCharQuad(pc, this->fontColor, rect_text);
+	    PackedCharactor *pc = stbfont.getPackedCharactor(c, this->fontSize, &x, &y);
+	    gui::DrawCommand *cmd = GLRenderer::makeCharQuad(*pc, this->fontColor, rect_text);
 	    this->drawCmds.emplace_back(cmd);
+	    delete pc;
 	}
     }
 

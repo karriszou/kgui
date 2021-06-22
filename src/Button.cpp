@@ -60,29 +60,29 @@ namespace gui
 	this->texture = new GLTexture(w, h, data, format);
     }
 
-    std::vector<DrawCommand>& Button::getDrawCmds()
+    std::vector<DrawCommand *>& Button::getDrawCmds()
     {
 	if(this->fontSize < 1.0) std::cout << "Warnning::Text::getDrawCmds: font size is too small!" << std::endl;
-	this->drawCmds.clear();
+	this->clearDrawCmds();
 
 	// TODO: Anchor and more align
 
 	// Make filled-rectangle command
 	if(this->radius > 0)
 	{
-	    gui::DrawCommand& cmd = GLRenderer::makeFillRoundRect(this->rect, this->radius, this->bgColor, this->texture);
+	    gui::DrawCommand *cmd = GLRenderer::makeFillRoundRect(this->rect, this->radius, this->bgColor, this->texture);
 	    this->drawCmds.emplace_back(cmd);
 	}
 	else
 	{
-	    gui::DrawCommand& cmd = GLRenderer::makeFillRect(this->rect, this->bgColor, this->texture);
+	    gui::DrawCommand* cmd = GLRenderer::makeFillRect(this->rect, this->bgColor, this->texture);
 	    this->drawCmds.emplace_back(cmd);
 	}
 	
 	// Make rectangle(border) command
 	if(this->thickness > 0)
 	{
-	    gui::DrawCommand& cmd = GLRenderer::makeRectangle(this->rect, this->borderColor, this->thickness);
+	    gui::DrawCommand* cmd = GLRenderer::makeRectangle(this->rect, this->borderColor, this->thickness);
 	    this->drawCmds.emplace_back(cmd);
 	}
 
@@ -97,8 +97,8 @@ namespace gui
 	    float y = rect.y + (rect.h - ch) / 2.0f + ch;
 	    for(wchar_t c : this->text)
 	    {
-		PackedCharactor& pc = font.getPackedCharactor(c, this->fontSize, &x, &y);
-		gui::DrawCommand& cmd = GLRenderer::makeCharQuad(pc, this->fgColor, &this->rect);
+		PackedCharactor *pc = font.getPackedCharactor(c, this->fontSize, &x, &y);
+		gui::DrawCommand *cmd = GLRenderer::makeCharQuad(*pc, this->fgColor, &this->rect);
 		this->drawCmds.emplace_back(cmd);
 	    }
 	}

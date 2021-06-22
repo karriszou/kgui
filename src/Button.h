@@ -36,7 +36,7 @@ public:
 
     void setTexture(int w, int h, unsigned char *data, GLTextureFormat format = GLTextureFormat::Rgba);
 
-    std::vector<DrawCommand>& getDrawCmds() override;
+    std::vector<DrawCommand *>& getDrawCmds() override;
 
 
 protected:
